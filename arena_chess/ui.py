@@ -194,6 +194,23 @@ footer, .footer, div[class*="footer"], .built-with, .share-button { display:none
 
 .gr-column, [class*="column"] { min-width:0 !important; }
 
+/* Leaderboard dataframe fixes */
+.tabitem [role="tabpanel"] .dataframe {
+    width:100% !important;
+    overflow-x:auto !important;
+}
+.tabitem [role="tabpanel"] .data-frame {
+    width:100% !important;
+}
+.tabitem [role="tabpanel"] table {
+    width:100% !important;
+    table-layout:fixed !important;
+}
+.tabitem [role="tabpanel"] th, .tabitem [role="tabpanel"] td {
+    word-wrap:break-word !important;
+    overflow-wrap:break-word !important;
+}
+
 @media (max-width:860px) {
     .gradio-row { flex-direction:column !important; }
     .gradio-column, .gr-column { width:100% !important; flex:none !important; }
@@ -264,15 +281,15 @@ def make_display():
 
             with gr.TabItem("  ♛  Leaderboard  ") as leaderboard_tab:
                 with gr.Row():
-                    with gr.Column(scale=1):
+                    with gr.Column(scale=1, min_width=300):
                         ratings_df = gr.Dataframe(
                             headers=["Player", "ELO"],
-                            label="Ratings", col_count=2, row_count=10, max_height=600,
+                            label="Ratings", col_count=2, row_count=15, max_height=800,
                         )
-                    with gr.Column(scale=2):
+                    with gr.Column(scale=2, min_width=500):
                         results_df = gr.Dataframe(
                             headers=["When", "White Player", "Black Player", "Winner"],
-                            label="Game History", col_count=4, row_count=10, max_height=600,
+                            label="Game History", col_count=4, row_count=15, max_height=800,
                         )
 
         LOAD_OUTPUTS = [game, board_html, message,
