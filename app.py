@@ -19,5 +19,5 @@ if __name__ == "__main__":
     logging.getLogger('chess.engine').setLevel(logging.WARNING)
     
     app = make_display()
-    app.launch()
+    app.launch(server_name="0.0.0.0", server_port=7860, show_error=True)
     
