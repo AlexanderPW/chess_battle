@@ -150,7 +150,7 @@ class LLM(ABC):
             # Special handling for Ollama (checks localhost availability)
             if class_name == 'Ollama':
                 if llm_subclass._is_ollama_available():
-                    available_models.extend(llm_subclass.model_names or getModelNames())
+                    available_models.extend(llm_subclass.get_model_names())
             else:
                 # For other providers, check if API key is set
                 required_key = api_key_requirements.get(class_name)
