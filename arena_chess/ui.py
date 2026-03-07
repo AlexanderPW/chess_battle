@@ -100,8 +100,8 @@ def thoughts_html(raw: str, side: str) -> str:
 
 def format_records_for_table(games):
     df = pd.DataFrame(
-        [[g.when, g.red_player, g.yellow_player,
-          "White" if g.red_won else "Black" if g.yellow_won else "Draw"]
+        [[g.when, g.white_player, g.black_player,
+          "White" if g.white_won else "Black" if g.black_won else "Draw"]
          for g in reversed(games)],
         columns=["When", "White Player", "Black Player", "Winner"],
     )

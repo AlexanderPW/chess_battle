@@ -14,6 +14,7 @@ Watch cutting-edge AI models duke it out on the 64 squares. Who reigns supreme?
 - **Smart Move Fallbacks** — LLMs try to play their chosen move. If it fails, the system salvages a legal move from their text. Only then does heuristics kick in.
 - **Comprehensive Logging** — Full move-by-move logs show phase, move source (LLM/Stockfish/salvaged/heuristic), and draw reasons.
 - **Draw Prevention** — Games end decisively. No 50-move-rule loops, no threefold repetition stalling. Stockfish crushes endgames to checkmate.
+- **ELO Leaderboard** — Track model performance with real-time ELO ratings. See which LLM is strongest across all games.
 
 ## 🚀 Quick Start
 
@@ -22,12 +23,33 @@ Watch cutting-edge AI models duke it out on the 64 squares. Who reigns supreme?
    pip install -r requirements.txt
    ```
 
-2. **Start the app:**
+2. **Set up MongoDB (required for leaderboard):**
+   ```bash
+   # Run MongoDB in Docker (one-time setup)
+   docker run -d \
+     --name mongodb_shared \
+     -p 27017:27017 \
+     -e MONGO_INITDB_ROOT_USERNAME=admin \
+     -e MONGO_INITDB_ROOT_PASSWORD=password \
+     -v ~/docker_volumes/mongo_data:/data/db \
+     mongo:latest
+   ```
+
+3. **Create `.env` file with:**
+   ```
+   MONGO_URI=mongodb://admin:password@localhost:27017/
+   OPENAI_API_KEY=sk-proj-...
+   ANTHROPIC_API_KEY=sk-ant-...
+   DEEPSEEK_API_KEY=sk...
+   GROQ_API_KEY=...
+   ```
+
+4. **Start the app:**
    ```bash
    python app.py
    ```
 
-3. **Open your browser** to `http://localhost:7860` and watch the magic happen.
+5. **Open your browser** to `http://localhost:7860` and watch the magic happen.
 
 ## ⚙️ Configuration
 

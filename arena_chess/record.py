@@ -10,14 +10,14 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
 @dataclass
 class Result:
-    red_player: str
-    yellow_player: str
-    red_won: bool
-    yellow_won: bool
+    white_player: str
+    black_player: str
+    white_won: bool
+    black_won: bool
     when: datetime
 
 
-COLLECTION = "connect"
+COLLECTION = "games"
 
 
 def _get_collection():
@@ -28,7 +28,7 @@ def _get_collection():
             client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
             # Quick check if we can actually connect
             client.admin.command("ismaster")
-            db = client.outsmart
+            db = client.chess_battle
             return db[COLLECTION]
     except (ConnectionFailure, ServerSelectionTimeoutError):
         return None
@@ -41,13 +41,17 @@ def record_game(result: Result) -> bool:
     """
     collection = _get_collection()
     if collection is None:
+        logging.warning("MongoDB unavailable - game not recorded")
         return False
 
     # Convert Result object to dictionary for MongoDB storage
     game_dict = asdict(result)
+    # Convert datetime to ISO format string for JSON serialization
+    game_dict["when"] = result.when.isoformat()
 
     try:
         collection.insert_one(game_dict)
+        logging.info("Game recorded in database")
         return True
     except Exception as e:
         logging.error("Failed to record a game in the database")
@@ -73,6 +77,9 @@ def get_games() -> List[Result]:
         for game in games:
             # Remove MongoDB's _id field
             game.pop("_id", None)
+            # Convert ISO string back to datetime
+            if isinstance(game.get("when"), str):
+                game["when"] = datetime.fromisoformat(game["when"])
             results.append(Result(**game))
 
         return results
@@ -151,21 +158,19 @@ def calculate_elo_ratings(
 
     for result in results:
         # Skip self-play games if requested
-        if exclude_self_play and result.red_player == result.yellow_player:
+        if exclude_self_play and result.white_player == result.black_player:
             continue
 
         # Convert game result to ELO scores (1 for win, 0.5 for draw, 0 for loss)
-        if result.red_won and not result.yellow_won:
-            red_score, yellow_score = 1.0, 0.0
-        elif result.yellow_won and not result.red_won:
-            red_score, yellow_score = 0.0, 1.0
+        if result.white_won and not result.black_won:
+            white_score, black_score = 1.0, 0.0
+        elif result.black_won and not result.white_won:
+            white_score, black_score = 0.0, 1.0
         else:
-            # Draw (including double-win or double-loss cases)
-            red_score, yellow_score = 0.5, 0.5
+            # Draw (both won, both lost, or neither)
+            white_score, black_score = 0.5, 0.5
 
-        calculator.update_ratings(
-            result.red_player, result.yellow_player, red_score, yellow_score
-        )
+        calculator.update_ratings(result.white_player, result.black_player, white_score, black_score)
 
     return calculator.ratings
 
