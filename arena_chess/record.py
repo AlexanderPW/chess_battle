@@ -24,13 +24,15 @@ def _get_collection():
     """Helper function to get MongoDB collection with error handling"""
     try:
         mongo_uri = os.getenv("MONGO_URI")
-        if mongo_uri:
-            client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-            # Quick check if we can actually connect
-            client.admin.command("ismaster")
-            db = client.chess_battle
-            return db[COLLECTION]
-    except (ConnectionFailure, ServerSelectionTimeoutError):
+        if not mongo_uri:
+            return None
+        # Use very short timeout - fail fast if DB is unavailable
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=2000, connectTimeoutMS=2000)
+        client.admin.command("ismaster")
+        db = client.chess_battle
+        return db[COLLECTION]
+    except Exception as e:
+        logging.debug(f"MongoDB unavailable: {e}")
         return None
 
 
