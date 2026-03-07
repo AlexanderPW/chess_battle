@@ -129,14 +129,41 @@ class LLM(ABC):
 
     @classmethod
     def all_model_names(cls) -> List[str]:
-        models = cls.all_supported_model_names()
+        """
+        Return only models that have their API key configured.
+        Filters out unavailable models to keep UI clean.
+        """
+        # Map each LLM class to its required environment variable
+        api_key_requirements = {
+            'GPT': 'OPENAI_API_KEY',
+            'Claude': 'ANTHROPIC_API_KEY',
+            'Groq': 'GROQ_API_KEY',
+            'Gemini': 'GOOGLE_API_KEY',
+            'DeepSeekAPI': 'DEEPSEEK_API_KEY',
+            'Ollama': None,  # Ollama checks availability itself
+        }
+        
+        available_models = []
+        for llm_subclass in cls.__subclasses__():
+            class_name = llm_subclass.__name__
+            
+            # Special handling for Ollama (checks localhost availability)
+            if class_name == 'Ollama':
+                if llm_subclass._is_ollama_available():
+                    available_models.extend(llm_subclass.model_names or getModelNames())
+            else:
+                # For other providers, check if API key is set
+                required_key = api_key_requirements.get(class_name)
+                if required_key and os.getenv(required_key):
+                    available_models.extend(llm_subclass.model_names)
+        
+        # Allow manual override via MODELS env var
         allowed = os.getenv("MODELS")
-        print(f"Allowed models: {allowed}")
         if allowed:
             allowed_models = allowed.split(",")
-            return [model for model in allowed_models if model in models]
-        else:
-            return models
+            return [model for model in allowed_models if model in available_models]
+        
+        return available_models
 
     @classmethod
     def create(cls, model_name: str, temperature: float = 0.5) -> Self:
