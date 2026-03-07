@@ -50,15 +50,5 @@ class Game:
 
     @staticmethod
     def get_ratings():
-        from .llm import LLM
-        return {
-            model: rating
-            for model, rating in ratings().items()
-            if model in LLM.all_supported_model_names()
-        }
-
-    @staticmethod
-    def get_ratings():
-        # Only show ratings for models we support in this running env
-        supported = set(LLM.all_supported_model_names())
-        return {m: r for m, r in ratings().items() if m in supported}
+        """Return all ratings from the database regardless of current model availability"""
+        return ratings()
