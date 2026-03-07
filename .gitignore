@@ -54,3 +54,4 @@ test_*.py
 .DS_Store
 .AppleDouble
 .LSOverride
+connect.png
