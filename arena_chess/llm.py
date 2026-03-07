@@ -234,12 +234,19 @@ class Ollama(LLM):
     """
     Interface to local Ollama models via the OpenAI-compatible API.
     """
-    model_names = getModelNames()
-
+    model_names = []  # Lazy-loaded to avoid blocking startup
+    
     def __init__(self, model_name: str, temperature: float):
         super().__init__(model_name, temperature)
         self.client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
 
+    @classmethod
+    def get_model_names(cls):
+        """Lazy-load Ollama models to avoid blocking on startup if Ollama is unavailable"""
+        if not cls.model_names:
+            cls.model_names = getModelNames()
+        return cls.model_names
+    
     def _send(self, system: str, user: str, max_tokens: int = 3000) -> str:
         response = self.client.chat.completions.create(
             model=self.api_model_name(),
