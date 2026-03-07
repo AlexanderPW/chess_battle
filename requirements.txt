@@ -7,3 +7,4 @@ pymongo
 pandas
 python-chess
 stockfish
+typing_extensions

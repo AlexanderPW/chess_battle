@@ -3,7 +3,11 @@ from anthropic import Anthropic
 from openai import OpenAI
 from groq import Groq
 import logging
-from typing import Dict, Type, Self, List
+from typing import Dict, Type, List
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 import os
 import time
 import requests
