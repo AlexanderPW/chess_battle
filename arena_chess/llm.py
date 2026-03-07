@@ -233,20 +233,34 @@ class Gemini(LLM):
 class Ollama(LLM):
     """
     Interface to local Ollama models via the OpenAI-compatible API.
+    Only available when running locally with Ollama accessible on localhost:11434.
     """
-    model_names = []  # Lazy-loaded to avoid blocking startup
+    model_names = []  # Lazy-loaded, empty on HF Spaces
+    _ollama_available = None  # Cache availability check
     
+    @classmethod
+    def _is_ollama_available(cls) -> bool:
+        """Check if Ollama is actually running locally"""
+        if cls._ollama_available is not None:
+            return cls._ollama_available
+        try:
+            response = requests.get("http://localhost:11434/api/tags", timeout=1)
+            cls._ollama_available = response.status_code == 200
+        except:
+            cls._ollama_available = False
+        return cls._ollama_available
+
+    @classmethod
+    def get_model_names(cls):
+        """Only return Ollama models if Ollama is actually running"""
+        if not cls.model_names and cls._is_ollama_available():
+            cls.model_names = getModelNames()
+        return cls.model_names
+
     def __init__(self, model_name: str, temperature: float):
         super().__init__(model_name, temperature)
         self.client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
 
-    @classmethod
-    def get_model_names(cls):
-        """Lazy-load Ollama models to avoid blocking on startup if Ollama is unavailable"""
-        if not cls.model_names:
-            cls.model_names = getModelNames()
-        return cls.model_names
-    
     def _send(self, system: str, user: str, max_tokens: int = 3000) -> str:
         response = self.client.chat.completions.create(
             model=self.api_model_name(),
