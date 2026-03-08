@@ -196,7 +196,7 @@ class Claude(LLM):
 
 
 class GPT(LLM):
-    model_names = ["gpt-5", "gpt-5-mini", "gpt-5-nano"]
+    model_names = ["gpt-5-mini", "gpt-5-nano"]
 
     def __init__(self, model_name: str, temperature: float):
         super().__init__(model_name, temperature)
@@ -205,48 +205,10 @@ class GPT(LLM):
             self.reasoning_effort = "low"
 
 
-class O1(LLM):
-    model_names = []
-
-    def __init__(self, model_name: str, temperature: float):
-        super().__init__(model_name, temperature)
-        self.client = OpenAI()
-
-    def _send(self, system: str, user: str, max_tokens: int = 3000) -> str:
-        message = system + "\n\n" + user
-        response = self.client.chat.completions.create(
-            model=self.api_model_name(),
-            messages=[{"role": "user", "content": message}],
-        )
-        return response.choices[0].message.content
-
-
-class O3(LLM):
-    model_names = []
-
-    def __init__(self, model_name: str, temperature: float):
-        super().__init__(model_name, temperature)
-        override = os.getenv("OPENAI_API_KEY_O3")
-        if override:
-            print("Using special key with o3 access")
-            self.client = OpenAI(api_key=override)
-        else:
-            self.client = OpenAI()
-
-    def _send(self, system: str, user: str, max_tokens: int = 3000) -> str:
-        message = system + "\n\n" + user
-        response = self.client.chat.completions.create(
-            model=self.api_model_name(),
-            messages=[{"role": "user", "content": message}],
-        )
-        return response.choices[0].message.content
-
-
 class Gemini(LLM):
     model_names = [
         "gemini-2.5-flash",
         "gemini-2.5-flash-lite",
-        "gemini-2.5-pro",
     ]
 
     def __init__(self, model_name: str, temperature: float):
@@ -305,7 +267,7 @@ class Ollama(LLM):
 
 
 class DeepSeekAPI(LLM):
-    model_names = ["deepseek-chat V3", "deepseek-reasoner R1"]
+    model_names = ["deepseek-chat", "deepseek-reasoner"]
 
     def __init__(self, model_name: str, temperature: float):
         super().__init__(model_name, temperature)
