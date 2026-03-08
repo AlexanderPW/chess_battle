@@ -4,13 +4,29 @@ import json
 import logging
 import re
 import shutil
+import os
+from pathlib import Path
 
 from .llm import LLM
 from .board import WHITE, BLACK
 
 logger = logging.getLogger(__name__)
 
-STOCKFISH_PATH = shutil.which("stockfish")
+def _find_stockfish():
+    """Find Stockfish binary, prioritizing Debian standard location."""
+    paths_to_check = [
+        "/usr/games/stockfish",     # Debian standard (HF Spaces)
+        shutil.which("stockfish"),  # System PATH
+        "/usr/bin/stockfish",
+        "/usr/local/bin/stockfish",
+        "/bin/stockfish",
+    ]
+    for path in paths_to_check:
+        if path and os.path.exists(path):
+            return path
+    return None
+
+STOCKFISH_PATH = _find_stockfish()
 
 
 def _game_phase(board: chess.Board) -> str:
@@ -147,8 +163,6 @@ MUST be copied EXACTLY from the provided legal moves list — any deviation forf
 JSON schema:
 {{
   "evaluation": "1-2 sentence position assessment with material count",
-  "tactics": "specific threats you see (checks, captures, forks, pins, skewers)",
-  "plan": "your 2-3 move plan",
   "move_reason": "why THIS move best achieves your plan",
   "move_uci": "<exact UCI string from legal moves>"
 }}"""
@@ -187,7 +201,7 @@ You MUST copy one move EXACTLY from this list:
 {", ".join(legal_moves)}
 
 Output ONLY this JSON:
-{{"evaluation":"","tactics":"","plan":"","move_reason":"<why you chose this move>","move_uci":"<exact move from list>"}}"""
+{{"evaluation":"","move_reason":"<why you chose this move>","move_uci":"<exact move from list>"}}"""
 
     @staticmethod
     def _normalize_uci(raw) -> str:
@@ -221,8 +235,8 @@ Output ONLY this JSON:
         def ensure_string(value, fallback):
             return str(value) if value and not isinstance(value, (dict, list)) else fallback
         self.evaluation  = ensure_string(parsed.get("evaluation"),  self.evaluation)
-        self.tactics     = ensure_string(parsed.get("tactics"),     self.tactics)
-        self.plan        = ensure_string(parsed.get("plan"),        self.plan)
+        # self.tactics     = ensure_string(parsed.get("tactics"),     self.tactics)
+        # self.plan        = ensure_string(parsed.get("plan"),        self.plan)
         self.move_reason = ensure_string(parsed.get("move_reason"), self.move_reason)
 
     def move(self, board):
@@ -283,12 +297,6 @@ Output ONLY this JSON:
         <pre style="white-space: pre-wrap;">
 Evaluation:
 {self.evaluation}
-
-Tactics:
-{self.tactics}
-
-Plan:
-{self.plan}
 
 Move reason:
 {self.move_reason}

@@ -114,11 +114,20 @@ def format_ratings_for_table(ratings_map):
     return [[name, int(round(rating))] for name, rating in items]
 
 
+def _is_openai_model(model_name: str) -> bool:
+    """Check if a model is from OpenAI (gpt-5-*)"""
+    return model_name.startswith("gpt-5")
+
+
 # ── Callbacks ─────────────────────────────────────────────────────────────────
 
 def load_callback(white_llm, black_llm):
     game    = Game(white_llm, black_llm)
-    enabled = gr.Button(interactive=True)
+    # Disable run button if either player uses OpenAI
+    has_openai = _is_openai_model(white_llm) or _is_openai_model(black_llm)
+    run_enabled = gr.Button(interactive=not has_openai)
+    move_enabled = gr.Button(interactive=True)
+    reset_enabled = gr.Button(interactive=True)
     return (
         game,
         game.board.svg(),
@@ -126,7 +135,7 @@ def load_callback(white_llm, black_llm):
         side_panel_html(game, "white"),
         side_panel_html(game, "black"),
         "", "",
-        enabled, enabled, enabled,
+        move_enabled, run_enabled, reset_enabled,
     )
 
 
@@ -175,11 +184,17 @@ def run_callback(game):
 
 def white_model_callback(game, name):
     game.players[WHITE].switch_model(name)
-    return game
+    # Check if either player now has OpenAI
+    has_openai = _is_openai_model(name) or _is_openai_model(game.players[BLACK].model)
+    run_enabled = gr.Button(interactive=not has_openai)
+    return game, run_enabled
 
 def black_model_callback(game, name):
     game.players[BLACK].switch_model(name)
-    return game
+    # Check if either player now has OpenAI
+    has_openai = _is_openai_model(name) or _is_openai_model(game.players[WHITE].model)
+    run_enabled = gr.Button(interactive=not has_openai)
+    return game, run_enabled
 
 
 # ── CSS is loaded from styles.css ─────────────────────────────────────────

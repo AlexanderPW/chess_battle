@@ -2,9 +2,16 @@ import logging
 import sys
 from dotenv import load_dotenv
 from arena_chess.ui import make_display
+from arena_chess.player import STOCKFISH_PATH
 
 if __name__ == "__main__":
     load_dotenv(override=True)
+    
+    # Verify Stockfish availability at startup
+    if STOCKFISH_PATH:
+        print(f"✓ Stockfish found at: {STOCKFISH_PATH}", file=sys.stderr)
+    else:
+        print("⚠ WARNING: Stockfish not found. Endgame moves will use LLM only.", file=sys.stderr)
     
     # Configure logging to stderr with detailed format
     logging.basicConfig(
