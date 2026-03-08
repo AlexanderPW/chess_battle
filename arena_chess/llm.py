@@ -137,7 +137,7 @@ class LLM(ABC):
         api_key_requirements = {
             'GPT': 'OPENAI_API_KEY',
             'Claude': 'ANTHROPIC_API_KEY',
-            'Groq': 'GROQ_API_KEY',
+            'GroqAPI': 'GROQ_API_KEY',
             'Gemini': 'GOOGLE_API_KEY',
             'DeepSeekAPI': 'DEEPSEEK_API_KEY',
             'Ollama': None,  # Ollama checks availability itself
@@ -341,7 +341,8 @@ class DeepSeekLocal(LLM):
 
 class GroqAPI(LLM):
     model_names = [
-        "openai/gpt-oss-120b via Groq",
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
     ]
 
     def __init__(self, model_name: str, temperature: float):
