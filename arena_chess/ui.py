@@ -1,12 +1,17 @@
 import gradio as gr
 import pandas as pd
 import chess
+from pathlib import Path
 
 from .llm import LLM
 from .game import Game
 from .board import WHITE, BLACK
 
 ALL_MODEL_NAMES = LLM.all_model_names()
+
+# Load CSS from external file
+CSS_PATH = Path(__file__).parent / "styles.css"
+CSS = CSS_PATH.read_text() if CSS_PATH.exists() else ""
 
 # ── Piece unicode maps ─────────────────────────────────────────────────────────
 PIECE_UNICODE = {
@@ -51,49 +56,44 @@ def side_panel_html(game, side: str) -> str:
 
     cap_str = w_cap if side == "white" else b_cap
     pieces_display = (
-        f'<span style="font-size:15px;letter-spacing:2px;">{cap_str}</span>'
+        f'<span class="captured-pieces-display">{cap_str}</span>'
         if cap_str else
-        '<span style="color:#ddd;font-size:11px;">—</span>'
+        '<span class="captured-pieces-empty">—</span>'
     )
 
     adv_label = ""
     if side == "white" and adv > 0:
-        adv_label = f'<span style="color:{accent};font-size:11px;font-weight:700;margin-left:6px;">+{adv}</span>'
+        adv_label = f'<span class="advantage-value" style="color:{accent};">+{adv}</span>'
     elif side == "black" and adv < 0:
-        adv_label = f'<span style="color:{accent};font-size:11px;font-weight:700;margin-left:6px;">+{abs(adv)}</span>'
+        adv_label = f'<span class="advantage-value" style="color:{accent};">+{abs(adv)}</span>'
 
     return f"""
-    <div style="padding:6px 0 4px;border-top:1px solid #f0f0f0;margin-top:6px;">
-      <span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;
-                   color:#ccc;font-family:sans-serif;">Captured</span>{adv_label}
-      <div style="margin-top:3px;min-height:20px;">{pieces_display}</div>
+    <div class="captured-panel">
+      <span class="captured-label">Captured</span>{adv_label}
+      <div class="captured-pieces">{pieces_display}</div>
     </div>"""
 
 
 def message_html(game) -> str:
     msg  = game.board.message()
-    font = "font-family:'Cinzel',serif"
     if "wins" in msg.lower():
         icon  = "♚" if "Black" in msg else "♔"
         color = "#c0392b" if "Black" in msg else "#b8860b"
-        return f'<div style="text-align:center;{font};font-size:1.1rem;color:{color};padding:6px 0;">{icon} {msg} {icon}</div>'
+        return f'<div class="message-box win" style="color:{color};">{icon} {msg} {icon}</div>'
     if "draw" in msg.lower():
-        return f'<div style="text-align:center;{font};font-size:1rem;color:#888;padding:6px 0;">½ — ½ Draw</div>'
+        return f'<div class="message-box draw">½ — ½ Draw</div>'
     check = "in check" in msg.lower()
     color = "#e05050" if check else "#aaa"
     warn  = "⚠ " if check else ""
-    return f'<div style="text-align:center;{font};font-size:.9rem;color:{color};padding:4px 0;">{warn}{msg}</div>'
+    return f'<div class="message-box check" style="color:{color};">{warn}{msg}</div>'
 
 
 def thoughts_html(raw: str, side: str) -> str:
     accent = "#b8860b" if side == "white" else "#c0392b"
     label  = "♔ White · Thoughts" if side == "white" else "♚ Black · Thoughts"
     return f"""
-    <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 12px;
-                font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;
-                color:#666;max-height:260px;overflow-y:auto;white-space:pre-wrap;">
-      <div style="color:{accent};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
-                  margin-bottom:6px;font-family:sans-serif;">{label}</div>
+    <div class="thoughts-box">
+      <div class="thoughts-label" style="color:{accent};">{label}</div>
       {raw}
     </div>"""
 
@@ -182,36 +182,14 @@ def black_model_callback(game, name):
     return game
 
 
-# ── CSS ───────────────────────────────────────────────────────────────────────
-
-CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Raleway:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
-footer, .footer, div[class*="footer"], .built-with, .share-button { display:none !important; }
-
-#board-display { width:100%; overflow:hidden; }
-#board-display svg { width:100% !important; height:auto !important; max-width:460px; display:block; margin:0 auto; }
-
-.gr-column, [class*="column"] { min-width:0 !important; }
-
-/* Hide horizontal scrollbars on tables */
-table { overflow:hidden !important; }
-
-@media (max-width:860px) {
-    .gradio-row { flex-direction:column !important; }
-    .gradio-column, .gr-column { width:100% !important; flex:none !important; }
-    #board-display svg { max-width:100% !important; }
-}
-"""
+# ── CSS is loaded from styles.css ─────────────────────────────────────────
 
 HEADER_HTML = """
-<div style="text-align:center;padding:12px 0 8px;border-bottom:1px solid #e8e8e8;margin-bottom:2px;">
-  <div style="font-family:'Cinzel',serif;font-size:1.5rem;font-weight:700;
-              letter-spacing:.05em;color:#b8860b;line-height:1;">
+<div class="chess-header">
+  <div class="chess-header-title" style="color:#b8860b;">
     ♟ Alex's LLM Chess Battleground
   </div>
-  <div style="font-family:'Raleway',sans-serif;font-size:9px;letter-spacing:.16em;
-              color:#ccc;text-transform:uppercase;margin-top:4px;">
+  <div class="chess-header-subtitle">
     Large Language Models · Battle of Wits
   </div>
 </div>
@@ -223,10 +201,8 @@ def _player_column(label: str, default: str, side: str):
     icon   = "♔" if side == "white" else "♚"
     with gr.Column(scale=1):
         gr.HTML(f"""
-        <div style="border-bottom:1px solid #e8e8e8;padding-bottom:6px;margin-bottom:8px;">
-          <span style="font-family:'Cinzel',serif;font-size:1rem;color:{accent};">
-            {icon} {label}
-          </span>
+        <div class="player-section-label" style="color:{accent};">
+          {icon} {label}
         </div>""")
         dropdown  = gr.Dropdown(ALL_MODEL_NAMES, value=default, label="Model", interactive=True)
         cap_panel = gr.HTML()

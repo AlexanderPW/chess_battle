@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Raleway:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+footer, .footer, div[class*="footer"], .built-with, .share-button { display:none !important; }
+
+#board-display { width:100%; overflow:hidden; }
+#board-display svg { width:100% !important; height:auto !important; max-width:460px; display:block; margin:0 auto; }
+
+.gr-column, [class*="column"] { min-width:0 !important; }
+
+/* Hide horizontal scrollbars on tables */
+table { overflow:hidden !important; }
+
+/* Header */
+.chess-header {
+    text-align: center;
+    padding: 12px 0 8px;
+    border-bottom: 1px solid #e8e8e8;
+    margin-bottom: 2px;
+}
+
+.chess-header-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+.chess-header-subtitle {
+    font-family: 'Raleway', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: #555;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+/* Player section labels */
+.player-section-label {
+    border-bottom: 1px solid #e8e8e8;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+}
+
+/* Captured pieces panel */
+.captured-panel {
+    padding: 6px 0 4px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 6px;
+}
+
+.captured-label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ccc;
+    font-family: sans-serif;
+}
+
+.captured-pieces {
+    margin-top: 3px;
+    min-height: 20px;
+}
+
+.captured-pieces-display {
+    font-size: 15px;
+    letter-spacing: 2px;
+}
+
+.captured-pieces-empty {
+    color: #ddd;
+    font-size: 11px;
+}
+
+.advantage-value {
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+/* Message box */
+.message-box {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    padding: 4px 0;
+}
+
+.message-box.win {
+    font-size: 1.1rem;
+    padding: 6px 0;
+}
+
+.message-box.draw {
+    font-size: 1rem;
+    color: #888;
+    padding: 6px 0;
+}
+
+.message-box.check {
+    font-size: 0.9rem;
+}
+
+/* Thoughts box */
+.thoughts-box {
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #666;
+    max-height: 260px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.thoughts-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-family: sans-serif;
+}
+
+@media (max-width:860px) {
+    .gradio-row { flex-direction:column !important; }
+    .gradio-column, .gr-column { width:100% !important; flex:none !important; }
+    #board-display svg { max-width:100% !important; }
+}
