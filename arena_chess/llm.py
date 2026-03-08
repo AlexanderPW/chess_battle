@@ -196,7 +196,7 @@ class Claude(LLM):
 
 
 class GPT(LLM):
-    model_names = ["gpt-5-mini", "gpt-5-nano"]
+    model_names = ["gpt-5-nano"]
 
     def __init__(self, model_name: str, temperature: float):
         super().__init__(model_name, temperature)
